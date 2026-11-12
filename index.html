@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10243a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="SM Calcu">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <title>SM Calculator</title>
+  <style>
+    :root{color-scheme:light;--navy:#10243a;--blue:#2463eb;--ink:#172536;--muted:#65758a;--line:#e2e8f0;--bg:#f3f6fa;--green:#087443;--red:#b42318}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;padding:24px 14px;background:radial-gradient(circle at top left,#e3edff 0,transparent 34%),var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+    .wrap{width:min(780px,100%);margin:0 auto}header{margin:8px 0 20px}.eyebrow{color:var(--blue);font-size:.76rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+    h1{margin:8px 0 6px;color:var(--navy);font-size:clamp(1.8rem,5vw,2.5rem);letter-spacing:-.04em}header p{margin:0;color:var(--muted);line-height:1.5}
+    .panel{background:#fff;border:1px solid var(--line);border-radius:20px;padding:clamp(16px,4vw,28px);box-shadow:0 14px 40px #1c355414}
+    .mode-label{display:block;margin-bottom:9px;font-weight:800}.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
+    .mode{border:1.5px solid var(--line);background:#f7f9fc;color:var(--ink);padding:14px;border-radius:12px;font-weight:800}
+    .mode.active{border-color:var(--blue);background:#eaf1ff;color:#1749b5;box-shadow:0 0 0 2px #2463eb18}
+    .fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field{min-width:0}.field.full{grid-column:1/-1}
+    label{display:block;margin-bottom:7px;font-size:.91rem;font-weight:750;color:#26384c}
+    input,textarea{width:100%;border:1.5px solid #d7e0eb;border-radius:11px;background:#fbfcfe;color:var(--ink);padding:13px 14px;font:inherit;font-size:1rem;outline:none}
+    input:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px #2463eb1c;background:#fff}textarea{min-height:86px;resize:vertical}
+    .hint{display:block;margin-top:5px;color:var(--muted);font-size:.76rem;line-height:1.4}
+    .actions{display:flex;gap:10px;margin-top:20px}button{border:0;border-radius:11px;padding:13px 17px;font:inherit;font-weight:750;cursor:pointer}
+    .primary{flex:1;background:var(--blue);color:#fff}.secondary{background:#edf2f8;color:#33465d}
+    .error{display:none;margin-top:13px;color:var(--red);font-size:.88rem;font-weight:650}
+    .results{margin-top:24px}.results h2{margin:0 0 5px;font-size:1.12rem;color:var(--navy)}.sub{margin:0 0 13px;color:var(--muted);font-size:.8rem}
+    .result-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+    .result{padding:14px;border:1px solid var(--line);border-radius:14px;background:#fbfcff;min-width:0}
+    .result .name{color:var(--muted);font-size:.78rem;font-weight:800}.result output{display:block;margin-top:7px;color:var(--navy);font-size:clamp(1.15rem,4vw,1.55rem);font-weight:850;overflow-wrap:anywhere}
+    .formula{margin-top:5px;color:#8491a2;font-size:.7rem;line-height:1.35}.result[hidden]{display:none}
+    .section-title{grid-column:1/-1;margin:7px 0 -2px;color:#31506f;font-size:.8rem;font-weight:850;letter-spacing:.06em;text-transform:uppercase}
+    .note{margin:14px 0 0;color:var(--muted);font-size:.77rem;line-height:1.5}footer{text-align:center;margin:18px 0 0;color:#8390a0;font-size:.76rem}
+    @media(max-width:560px){body{padding:18px 11px}.fields{grid-template-columns:1fr;gap:14px}.field.full{grid-column:auto}.result-grid{grid-template-columns:1fr}.result{display:grid;grid-template-columns:1fr auto;align-items:center;gap:7px}.result output{margin:0;text-align:right}.result .formula{grid-column:1/-1}.actions{flex-direction:column}}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <header><div class="eyebrow">For Reports</div><h1>SM Crew Calculator</h1><p>Choose TARGET or ACTUAL. Results appear as soon as enough information is entered.</p></header>
+  <section class="panel" aria-label="SM Crew Calculator">
+    <span class="mode-label">What do you want to compute?</span>
+    <div class="modes" role="group" aria-label="Calculation mode">
+      <button type="button" class="mode active" id="targetMode" aria-pressed="true">TARGET</button>
+      <button type="button" class="mode" id="actualMode" aria-pressed="false">ACTUAL</button>
+    </div>
+    <div class="fields" id="fields">
+      <div class="field" id="acField"><label for="ac">AC (Average Count)</label><input id="ac" type="number" min="0" step="any" inputmode="decimal" placeholder="Enter AC"></div>
+      <div class="field" id="gcField"><label for="gc">GC (Guest Count)</label><textarea id="gc" inputmode="decimal" placeholder="Example: 12, 15, 8.5, 10"></textarea><span class="hint">Enter up to 16 numbers, separated by commas.</span></div>
+      <div class="field full" id="targetSalesField"><label for="targetSales">Target Sales (₱)</label><input id="targetSales" type="number" min="0" step="any" inputmode="decimal" placeholder="Enter target sales"><span class="hint">Used to calculate Raw Waste and Complete Waste.</span></div>
+      <div class="field full" id="actualSalesField" hidden><label for="actualSales">Actual Sales (₱)</label><input id="actualSales" type="number" min="0" step="any" inputmode="decimal" placeholder="Enter actual sales"></div>
+      <div class="field full"><label for="hours">Crew Total HR</label><input id="hours" type="number" min="0" step="any" inputmode="decimal" placeholder="Enter total crew hours"></div>
+      <div class="field full"><label for="rate">Crew Rate (₱ per hour)</label><input id="rate" type="number" min="0" step="any" inputmode="decimal" placeholder="Enter crew rate"></div>
+    </div>
+    <div class="actions"><button class="primary" id="calculate" type="button">Update results</button><button class="secondary" id="reset" type="button">Reset</button></div>
+    <div class="error" id="error" role="alert"></div>
+    <section class="results" aria-live="polite">
+      <h2>Results</h2><p class="sub">Only results that can be calculated from your entries are displayed.</p>
+      <div class="result-grid" id="resultGrid">
+        <div class="result" id="rTotalGc" hidden><div><div class="name">Total GC</div><div class="formula">Sum of entered GC values</div></div><output id="totalGc">—</output></div>
+        <div class="result" id="rAc" hidden><div><div class="name">AC</div><div class="formula">Actual Sales ÷ Actual GC</div></div><output id="acResult">—</output></div>
+        <div class="result" id="rSales" hidden><div><div class="name" id="salesName">Sales</div><div class="formula" id="salesFormula">AC × Total GC</div></div><output id="salesResult">—</output></div>
+        <div class="result" id="rRaw" hidden><div><div class="name">Raw Waste</div><div class="formula">Sales basis × 0.20%</div></div><output id="rawWaste">—</output></div>
+        <div class="result" id="rComplete" hidden><div><div class="name">Complete Waste</div><div class="formula">Sales basis × 0.05%</div></div><output id="completeWaste">—</output></div>
+        <div class="result" id="rLaborAmount" hidden><div><div class="name">Crew Labor (₱)</div><div class="formula">Crew Total HR × Crew Rate</div></div><output id="laborAmount">—</output></div>
+        <div class="result" id="rLaborPct" hidden><div><div class="name">Crew Labor (%)</div><div class="formula">(Crew Labor ÷ Sales) × 100</div></div><output id="laborPct">—</output></div>
+        <div class="result" id="rGcpch" hidden><div><div class="name">GCPCH</div><div class="formula">Total GC ÷ Crew Total HR</div></div><output id="gcpch">—</output></div>
+      </div>
+      <p class="note">Waste percentages are applied as 0.20% and 0.05% (0.002 and 0.0005). Crew rate is entered by you for each calculation.</p>
+    </section>
+  </section>
+  <footer>SM Crew Calculator</footer>
+</main>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const money = new Intl.NumberFormat("en-PH",{style:"currency",currency:"PHP",maximumFractionDigits:2});
+  const number = new Intl.NumberFormat("en-PH",{maximumFractionDigits:2});
+  let mode = "target";
+  const ids = ["ac","gc","targetSales","actualSales","hours","rate"];
+  const resultIds = ["rTotalGc","rAc","rSales","rRaw","rComplete","rLaborAmount","rLaborPct","rGcpch"];
+  const val = id => $(id).value.trim();
+  const numeric = id => val(id)==="" ? null : Number(val(id));
+  const setResult = (cardId, outputId, value, formatter=number) => {
+    const card = $(cardId); card.hidden = value === null || !Number.isFinite(value);
+    if (!card.hidden) $(outputId).textContent = formatter.format(value);
+  };
+  function setMode(next) {
+    mode = next;
+    $("targetMode").classList.toggle("active",mode==="target");
+    $("actualMode").classList.toggle("active",mode==="actual");
+    $("targetMode").setAttribute("aria-pressed",String(mode==="target"));
+    $("actualMode").setAttribute("aria-pressed",String(mode==="actual"));
+    $("acField").hidden = mode==="actual";
+    $("gcField").querySelector("label").textContent = mode==="actual" ? "Actual GC (Guest Count)" : "GC (Guest Count)";
+    $("targetSalesField").hidden = mode!=="target";
+    $("actualSalesField").hidden = mode!=="actual";
+    $("salesName").textContent = mode==="target" ? "Calculated Sales" : "Actual Sales";
+    $("salesFormula").textContent = mode==="target" ? "AC × Total GC" : "Entered Actual Sales";
+    clearError(); update();
+  }
+  function clearError(){ $("error").style.display="none"; $("error").textContent=""; }
+  function update() {
+    clearError();
+    resultIds.forEach(id => $(id).hidden=true);
+    const gcText = val("gc");
+    let gc = null;
+    if (gcText) {
+      const tokens=gcText.split(",").map(x=>x.trim());
+      if(tokens.length>16 || tokens.some(x=>x==="" || !Number.isFinite(Number(x)) || Number(x)<0)) {
+        $("error").textContent="GC must contain up to 16 valid, non-negative numbers separated by commas.";
+        $("error").style.display="block";
+      } else gc=tokens.reduce((s,x)=>s+Number(x),0);
+    }
+    const ac = numeric("ac"), targetSales=numeric("targetSales"), actualSales=numeric("actualSales");
+    const hours=numeric("hours"), rate=numeric("rate");
+    const invalid = [ac,targetSales,actualSales,hours,rate].some(x=>x!==null && (!Number.isFinite(x)||x<0));
+    if(invalid){ $("error").textContent="Please use valid numbers that are zero or greater."; $("error").style.display="block"; }
+    if(gc!==null) setResult("rTotalGc","totalGc",gc);
+    let sales=null, salesBasis=null;
+    if(mode==="target") {
+      if(ac!==null && ac>=0 && gc!==null) sales=ac*gc;
+      if(targetSales!==null && targetSales>=0) salesBasis=targetSales;
+    } else {
+      if(actualSales!==null && actualSales>=0) {sales=actualSales; salesBasis=actualSales;}
+      if(actualSales!==null && gc!==null && gc>0) setResult("rAc","acResult",actualSales/gc);
+    }
+    if(sales!==null) setResult("rSales","salesResult",sales,money);
+    if(salesBasis!==null) {
+      setResult("rRaw","rawWaste",salesBasis*0.002,money);
+      setResult("rComplete","completeWaste",salesBasis*0.0005,money);
+    }
+    const labor = hours!==null && rate!==null && hours>=0 && rate>=0 ? hours*rate : null;
+    if(labor!==null) setResult("rLaborAmount","laborAmount",labor,money);
+    if(labor!==null && sales!==null && sales>0) setResult("rLaborPct","laborPct",(labor/sales)*100,v=>number.format(v)+"%");
+    if(gc!==null && hours!==null && hours>0) setResult("rGcpch","gcpch",gc/hours);
+  }
+  function reset(){
+    ids.forEach(id=>$(id).value="");
+    clearError(); update();
+  }
+  $("targetMode").addEventListener("click",()=>setMode("target"));
+  $("actualMode").addEventListener("click",()=>setMode("actual"));
+  $("calculate").addEventListener("click",update);
+  $("reset").addEventListener("click",reset);
+  ids.forEach(id=>$(id).addEventListener("input",update));
+  setMode("target");
+})();
+</script>
+<script>
+if ("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.error));
+</script>
+</body>
+</html>
