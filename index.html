@@ -1,0 +1,41 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#DA291C"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="SM/SL Calculator"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-192.png"><title>SM/SL Calculator</title>
+<style>
+:root{--red:#DA291C;--yellow:#FFC72C;--ink:#252525;--muted:#6b7280;--line:#eadfd8;--bg:#fff8ec}*{box-sizing:border-box}body{margin:0;padding:20px 12px;background:var(--bg);color:var(--ink);font:16px system-ui,-apple-system,Segoe UI,sans-serif}main{max-width:700px;margin:auto}.head{text-align:center;margin:8px 0 20px}.tag{display:inline-block;background:var(--yellow);padding:6px 13px;border-radius:30px;color:#7a1710;font-size:12px;font-weight:900;letter-spacing:.1em}h1{color:var(--red);font-size:clamp(28px,6vw,38px);margin:12px 0 4px;font-weight:950}.card{background:white;border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 8px 25px #63201510}h2{font-size:17px;margin:0 0 13px}.choices,.grid,.results{display:grid;grid-template-columns:1fr 1fr;gap:11px}.choice{border:2px solid var(--line);border-radius:14px;padding:20px 10px;background:white;font-weight:900;font-size:18px}.choice:focus,.choice:hover{border-color:var(--red);background:#fff0ed;color:var(--red)}.choice small{display:block;color:#777;font-size:11px;margin-top:4px}label{display:block;font-size:13px;font-weight:800;margin:0 0 6px}input,textarea{width:100%;padding:13px;border:1.5px solid #ddd2ca;border-radius:11px;font:inherit;background:#fff}textarea{min-height:75px;resize:vertical}.field{min-width:0}.full{grid-column:1/-1}.hint,.note{font-size:11px;color:var(--muted);margin-top:5px}.actions{display:flex;gap:9px;margin-top:14px}button{cursor:pointer;font:inherit}.action{background:#fff0ed;color:var(--red);border:0;border-radius:10px;padding:11px 15px;font-weight:800}.result{border:1px solid var(--line);border-radius:12px;padding:13px;background:#fffdf9}.result[hidden],[hidden]{display:none!important}.name{font-size:12px;color:var(--muted);font-weight:800}.value{font-size:clamp(18px,4vw,23px);font-weight:950;margin-top:5px;overflow-wrap:anywhere}.live{float:right;color:#287547;font-size:11px;font-weight:800}.error{display:none;color:#b42318;font-size:12px;font-weight:700;margin-top:10px}@media(max-width:520px){.grid,.results{grid-template-columns:1fr}.full{grid-column:auto}.card{padding:15px}}
+</style></head><body><main><header class="head"><span class="tag">FOR CHECKLIST REPORTS</span><h1>SM/SL CALCULATOR</h1></header>
+<section class="card" id="chooser"><h2>What do you want to calculate?</h2><div class="choices"><button class="choice" id="target">TARGET<small>Projected performance</small></button><button class="choice" id="actual">ACTUAL<small>Recorded performance</small></button></div></section>
+<section class="card" id="calc" hidden><h2 id="modeTitle"></h2><div class="grid">
+<div class="field" id="acField"><label>Average Count — Projected AC</label><input id="ac" type="number" min="0" step="any" placeholder="Projected AC"></div>
+<div class="field full" id="salesField" hidden><label>Actual Sales (₱)</label><input id="sales" type="number" min="0" step="any" placeholder="Actual sales"></div>
+<div class="field full"><label>Guest Count — <span id="gcLabel">Projected GC</span></label><textarea id="gc" placeholder="Example: 25, 30, 18, 22"></textarea><div class="hint">Up to 16 numbers, separated by commas.</div></div>
+<div class="field"><label>Crew Rate — Average Crew Rate (₱)</label><input id="rate" type="number" min="0" step="any" placeholder="Average crew rate"></div>
+<div class="field"><label>Crew Total Hours</label><input id="hours" type="number" min="0" step="any" placeholder="Crew total hours"></div></div>
+<div class="actions"><button class="action" id="back">Change type</button><button class="action" id="clear">Clear inputs</button></div><div class="error" id="error"></div></section>
+<section class="card" id="panel" hidden aria-live="polite"><h2>Results <span class="live">● LIVE</span></h2><div class="results">
+<div class="result" id="rSales" hidden><div class="name" id="salesName">SALES</div><div class="value" id="vSales"></div></div>
+<div class="result" id="rAc" hidden><div class="name">AC</div><div class="value" id="vAc"></div></div>
+<div class="result" id="rGc" hidden><div class="name">GC — TOTAL</div><div class="value" id="vGc"></div></div>
+<div class="result" id="rLabor" hidden><div class="name">CREW LABOR (₱)</div><div class="value" id="vLabor"></div></div>
+<div class="result" id="rPct" hidden><div class="name">CREW LABOR (%)</div><div class="value" id="vPct"></div></div>
+<div class="result" id="rGcpch" hidden><div class="name">GCPCH</div><div class="value" id="vGcpch"></div></div>
+<div class="result" id="rRaw" hidden><div class="name">RAW WASTE (0.20%)</div><div class="value" id="vRaw"></div></div>
+<div class="result" id="rComplete" hidden><div class="name">COMPLETE WASTE (0.50%)</div><div class="value" id="vComplete"></div></div></div><p class="note">Only results with enough valid inputs appear. Waste uses projected sales in TARGET and actual sales in ACTUAL.</p></section></main>
+<script>
+(()=>{const $=id=>document.getElementById(id),money=new Intl.NumberFormat("en-PH",{style:"currency",currency:"PHP",maximumFractionDigits:2}),fmt=new Intl.NumberFormat("en-PH",{maximumFractionDigits:2});let mode=null;
+const ids=["rSales","rAc","rGc","rLabor","rPct","rGcpch","rRaw","rComplete"];
+const val=id=>$(id).value.trim()===""?null:Number($(id).value);
+function put(card,out,text){$(card).hidden=text===null;if(text!==null)$(out).textContent=text}
+function update(){ids.forEach(id=>$(id).hidden=true);$("error").style.display="none";let gc=null,s=$("gc").value.trim();
+if(s){let a=s.split(",").map(x=>x.trim());if(a.length>16||a.some(x=>x===""||!Number.isFinite(Number(x))||Number(x)<0)){$("error").textContent="Enter up to 16 valid, non-negative GC numbers separated by commas.";$("error").style.display="block"}else gc=a.reduce((t,x)=>t+Number(x),0)}
+let rate=val("rate"),hours=val("hours"),labor=rate!==null&&hours!==null&&rate>=0&&hours>=0?rate*hours:null,sales=null;
+if(mode==="target"){let ac=val("ac");if(ac!==null&&ac>=0&&gc!==null)sales=ac*gc}else{let actual=val("sales");if(actual!==null&&actual>=0)sales=actual}
+if(gc!==null)put("rGc","vGc",fmt.format(gc));if(sales!==null)put("rSales","vSales",money.format(sales));
+if(mode==="actual"&&sales!==null&&gc!==null&&gc>0)put("rAc","vAc",fmt.format(sales/gc));
+if(labor!==null)put("rLabor","vLabor",money.format(labor));if(labor!==null&&sales!==null&&sales>0)put("rPct","vPct",fmt.format(labor/sales*100)+"%");
+if(gc!==null&&hours!==null&&hours>0)put("rGcpch","vGcpch",fmt.format(gc/hours));
+if(sales!==null){put("rRaw","vRaw",money.format(sales*.002));put("rComplete","vComplete",money.format(sales*.005))}
+$("panel").hidden=!ids.some(id=>!$(id).hidden)}
+function choose(m){mode=m;$("chooser").hidden=true;$("calc").hidden=false;$("panel").hidden=true;$("modeTitle").textContent=m.toUpperCase();$("acField").hidden=m!=="target";$("salesField").hidden=m!=="actual";$("gcLabel").textContent=m==="target"?"Projected GC":"Actual GC";$("salesName").textContent=m==="target"?"PROJECTED SALES":"ACTUAL SALES";update()}
+function clear(){["ac","sales","gc","rate","hours"].forEach(id=>$(id).value="");update()}
+$("target").onclick=()=>choose("target");$("actual").onclick=()=>choose("actual");$("back").onclick=()=>{$("chooser").hidden=false;$("calc").hidden=true;$("panel").hidden=true;mode=null};$("clear").onclick=clear;["ac","sales","gc","rate","hours"].forEach(id=>$(id).addEventListener("input",update));
+})();
+</script><script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));</script></body></html>
