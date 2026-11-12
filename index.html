@@ -32,7 +32,10 @@ if(gc!==null)put("rGc","vGc",fmt.format(gc));if(sales!==null)put("rSales","vSale
 if(mode==="actual"&&sales!==null&&gc!==null&&gc>0)put("rAc","vAc",fmt.format(sales/gc));
 if(labor!==null)put("rLabor","vLabor",money.format(labor));if(labor!==null&&sales!==null&&sales>0)put("rPct","vPct",fmt.format(labor/sales*100)+"%");
 if(gc!==null&&hours!==null&&hours>0)put("rGcpch","vGcpch",fmt.format(gc/hours));
-if(sales!==null){put("rRaw","vRaw",money.format(sales*.002));put("rComplete","vComplete",money.format(sales*.005))}
+if(mode==="target" && sales!==null){
+  put("rRaw","vRaw",money.format(sales*.002));
+  put("rComplete","vComplete",money.format(sales*.0005));
+}
 $("panel").hidden=!ids.some(id=>!$(id).hidden)}
 function choose(m){mode=m;$("chooser").hidden=true;$("calc").hidden=false;$("panel").hidden=true;$("modeTitle").textContent=m.toUpperCase();$("acField").hidden=m!=="target";$("salesField").hidden=m!=="actual";$("gcLabel").textContent=m==="target"?"Projected GC":"Actual GC";$("salesName").textContent=m==="target"?"PROJECTED SALES":"ACTUAL SALES";update()}
 function clear(){["ac","sales","gc","rate","hours"].forEach(id=>$(id).value="");update()}
