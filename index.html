@@ -27,7 +27,17 @@ function put(card,out,text){$(card).hidden=text===null;if(text!==null)$(out).tex
 function update(){ids.forEach(id=>$(id).hidden=true);$("error").style.display="none";let gc=null,s=$("gc").value.trim();
 if(s){let a=s.split(",").map(x=>x.trim());if(a.length>16||a.some(x=>x===""||!Number.isFinite(Number(x))||Number(x)<0)){$("error").textContent="Enter up to 16 valid, non-negative GC numbers separated by commas.";$("error").style.display="block"}else gc=a.reduce((t,x)=>t+Number(x),0)}
 let rate=val("rate"),hours=val("hours"),labor=rate!==null&&hours!==null&&rate>=0&&hours>=0?rate*hours:null,sales=null;
-if(mode==="target"){let ac=val("ac");if(ac!==null&&ac>=0&&gc!==null)sales=ac*gc}else{let actual=val("sales");if(actual!==null&&actual>=0)sales=actual}
+if(mode==="target"){
+  let ac=val("ac");
+  if(ac!==null&&ac>=0&&gc!==null){
+    sales=ac*gc;
+  }
+}else if(mode==="actual"){
+  let actual=val("sales");
+  if(actual!==null&&actual>=0){
+    sales=actual;
+  }
+}
 if(gc!==null&&hours!==null&&hours>0){
   let gcpch=gc/hours;
   let truncated=(Math.floor(gcpch*10000)/10000).toFixed(4);
