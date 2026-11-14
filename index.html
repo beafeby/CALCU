@@ -33,10 +33,9 @@ if(gc!==null&&hours!==null&&hours>0){
   let truncated=(Math.floor(gcpch*10000)/10000).toFixed(4);
   let rounded=gcpch.toFixed(2);
   put("rGcpch","vGcpch",truncated+" | "+rounded);
-}y
+}
 if(mode==="actual"&&sales!==null&&gc!==null&&gc>0)put("rAc","vAc",fmt.format(sales/gc));
 if(labor!==null)put("rLabor","vLabor",money.format(labor));if(labor!==null&&sales!==null&&sales>0)put("rPct","vPct",fmt.format(labor/sales*100)+"%");
-if(gc!==null&&hours!==null&&hours>0)put("rGcpch","vGcpch",fmt.format(gc/hours));
 if(mode==="target" && sales!==null){
   put("rRaw","vRaw",money.format(sales*.002));
   put("rComplete","vComplete",money.format(sales*.0005));
