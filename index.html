@@ -12,13 +12,13 @@
 <div class="actions"><button class="action" id="back">Change type</button><button class="action" id="clear">Clear inputs</button></div><div class="error" id="error"></div></section>
 <section class="card" id="panel" hidden aria-live="polite"><h2>Results <span class="live">● LIVE</span></h2><div class="results">
 <div class="result" id="rSales" hidden><div class="name" id="salesName">SALES</div><div class="value" id="vSales"></div></div>
-<div class="result" id="rAc" hidden><div class="name">AC</div><div class="value" id="vAc"></div></div>
+<div class="result" id="rAc" hidden><div class="name">AC (Sales ÷ Gc)</div><div class="value" id="vAc"></div></div>
 <div class="result" id="rGc" hidden><div class="name">GC — TOTAL</div><div class="value" id="vGc"></div></div>
-<div class="result" id="rLabor" hidden><div class="name">CREW LABOR (₱)</div><div class="value" id="vLabor"></div></div>
-<div class="result" id="rPct" hidden><div class="name">CREW LABOR (%)</div><div class="value" id="vPct"></div></div>
-<div class="result" id="rGcpch" hidden><div class="name">GCPCH</div><div class="value" id="vGcpch"></div></div>
-<div class="result" id="rRaw" hidden><div class="name">RAW WASTE (0.20%)</div><div class="value" id="vRaw"></div></div>
-<div class="result" id="rComplete" hidden><div class="name">COMPLETE WASTE (0.05%)</div><div class="value" id="vComplete"></div></div></div><p class="note"> TLC sa waste yah. HAHA.</p></section></main>
+<div class="result" id="rLabor" hidden><div class="name">CREW LABOR (₱) [crew hr. x crew rate] </div><div class="value" id="vLabor"></div></div>
+<div class="result" id="rPct" hidden><div class="name">CREW LABOR (%) [crew hrs x crew rate ÷ sales x 100]</div><div class="value" id="vPct"></div></div>
+<div class="result" id="rGcpch" hidden><div class="name">GCPCH (GC ÷ CREW HRS)</div><div class="value" id="vGcpch"></div></div>
+<div class="result" id="rRaw" hidden><div class="name">RAW WASTE (SALES x 0.20%)</div><div class="value" id="vRaw"></div></div>
+<div class="result" id="rComplete" hidden><div class="name">COMPLETE WASTE (SALES x 0.05%)</div><div class="value" id="vComplete"></div></div></div><p class="note"> TLC sa waste yah. HAHA.</p></section></main>
 <script>
 (()=>{const $=id=>document.getElementById(id),money=new Intl.NumberFormat("en-PH",{style:"currency",currency:"PHP",maximumFractionDigits:2}),fmt=new Intl.NumberFormat("en-PH",{maximumFractionDigits:2});let mode=null;
 const ids=["rSales","rAc","rGc","rLabor","rPct","rGcpch","rRaw","rComplete"];
@@ -28,14 +28,14 @@ function update(){ids.forEach(id=>$(id).hidden=true);$("error").style.display="n
 if(s){let a=s.split(",").map(x=>x.trim());if(a.length>16||a.some(x=>x===""||!Number.isFinite(Number(x))||Number(x)<0)){$("error").textContent="Enter up to 16 valid, non-negative GC numbers separated by commas.";$("error").style.display="block"}else gc=a.reduce((t,x)=>t+Number(x),0)}
 let rate=val("rate"),hours=val("hours"),labor=rate!==null&&hours!==null&&rate>=0&&hours>=0?rate*hours:null,sales=null;
 if(mode==="target"){let ac=val("ac");if(ac!==null&&ac>=0&&gc!==null)sales=ac*gc}else{let actual=val("sales");if(actual!==null&&actual>=0)sales=actual}
-if(gc!==null)put("rGc","vGc",fmt.format(gc));if(sales!==null)put("rSales","vSales",money.format(sales));
+if(gc!==null&&hours!==null&&hours>0){
+  let gcpch=gc/hours;
+  let truncated=(Math.floor(gcpch*10000)/10000).toFixed(4);
+  let rounded=gcpch.toFixed(2);
+  put("rGcpch","vGcpch",truncated+" | "+rounded);
+}y
 if(mode==="actual"&&sales!==null&&gc!==null&&gc>0)put("rAc","vAc",fmt.format(sales/gc));
-if(labor!==null&&sales!==null&&sales>0){
-  let pct=labor/sales*100;
-  let truncated=(Math.floor(pct*10000)/10000).toFixed(4);
-  let rounded=pct.toFixed(2);
-  put("rPct","vPct",truncated+"% | "+rounded+"%");
-}
+if(labor!==null)put("rLabor","vLabor",money.format(labor));if(labor!==null&&sales!==null&&sales>0)put("rPct","vPct",fmt.format(labor/sales*100)+"%");
 if(gc!==null&&hours!==null&&hours>0)put("rGcpch","vGcpch",fmt.format(gc/hours));
 if(mode==="target" && sales!==null){
   put("rRaw","vRaw",money.format(sales*.002));
