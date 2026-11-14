@@ -30,7 +30,12 @@ let rate=val("rate"),hours=val("hours"),labor=rate!==null&&hours!==null&&rate>=0
 if(mode==="target"){let ac=val("ac");if(ac!==null&&ac>=0&&gc!==null)sales=ac*gc}else{let actual=val("sales");if(actual!==null&&actual>=0)sales=actual}
 if(gc!==null)put("rGc","vGc",fmt.format(gc));if(sales!==null)put("rSales","vSales",money.format(sales));
 if(mode==="actual"&&sales!==null&&gc!==null&&gc>0)put("rAc","vAc",fmt.format(sales/gc));
-if(labor!==null)put("rLabor","vLabor",money.format(labor));if(labor!==null&&sales!==null&&sales>0)put("rPct","vPct",fmt.format(labor/sales*100)+"%");
+if(labor!==null&&sales!==null&&sales>0){
+  let pct=labor/sales*100;
+  let truncated=(Math.floor(pct*10000)/10000).toFixed(4);
+  let rounded=pct.toFixed(2);
+  put("rPct","vPct",truncated+"% | "+rounded+"%");
+}
 if(gc!==null&&hours!==null&&hours>0)put("rGcpch","vGcpch",fmt.format(gc/hours));
 if(mode==="target" && sales!==null){
   put("rRaw","vRaw",money.format(sales*.002));
