@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#DA291C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SM/SL Calculator">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<title>SM/SL Calculator</title>
+<style>
+:root{--red:#DA291C;--yellow:#FFC72C;--ink:#252525;--muted:#6b7280;--line:#eadfd8;--bg:#fff8ec;--green:#287547}
+*{box-sizing:border-box}
+body{margin:0;padding:20px 12px;background:var(--bg);color:var(--ink);font:16px system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:850px;margin:auto}
+.head{text-align:center;margin:8px 0 20px}
+.tag{display:inline-block;background:var(--yellow);padding:6px 13px;border-radius:30px;color:#7a1710;font-size:12px;font-weight:900;letter-spacing:.1em}
+h1{color:var(--red);font-size:clamp(28px,6vw,38px);margin:12px 0 4px;font-weight:950}
+.card{background:white;border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 8px 25px #63201510}
+h2{font-size:17px;margin:0 0 13px}
+h3{font-size:15px;margin:18px 0 9px}
+.choices,.grid,.results{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.choice{border:2px solid var(--line);border-radius:14px;padding:20px 10px;background:white;font-weight:900;font-size:18px}
+.choice:focus,.choice:hover{border-color:var(--red);background:#fff0ed;color:var(--red)}
+.choice small{display:block;color:#777;font-size:11px;margin-top:4px}
+label{display:block;font-size:13px;font-weight:800;margin:0 0 6px}
+input,textarea{width:100%;padding:13px;border:1.5px solid #ddd2ca;border-radius:11px;font:inherit;background:#fff}
+textarea{min-height:75px;resize:vertical}
+.field{min-width:0}
+.full{grid-column:1/-1}
+.hint,.note{font-size:11px;color:var(--muted);margin-top:5px}
+.actions{display:flex;gap:9px;margin-top:14px;flex-wrap:wrap}
+button{cursor:pointer;font:inherit}
+.action{background:#fff0ed;color:var(--red);border:0;border-radius:10px;padding:11px 15px;font-weight:800}
+.action.primary{background:var(--red);color:white}
+.result{border:1px solid var(--line);border-radius:12px;padding:13px;background:#fffdf9}
+.result[hidden],[hidden]{display:none!important}
+.name{font-size:12px;color:var(--muted);font-weight:800}
+.value{font-size:clamp(18px,4vw,23px);font-weight:950;margin-top:5px;overflow-wrap:anywhere}
+.live{float:right;color:var(--green);font-size:11px;font-weight:800}
+.error{display:none;color:#b42318;font-size:12px;font-weight:700;margin-top:10px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:570px;font-size:13px}
+th,td{border:1px solid var(--line);padding:10px 8px;text-align:right;white-space:nowrap}
+th{background:#fff0ed;color:#7a1710;font-weight:900}
+th:first-child,td:first-child{text-align:left}
+td{font-variant-numeric:tabular-nums}
+.positive{color:var(--green);font-weight:850}
+.negative{color:#b42318;font-weight:850}
+.neutral{color:var(--muted);font-weight:700}
+.section-note{font-size:12px;color:var(--muted);margin:8px 0 0}
+.status{font-size:12px;color:var(--green);font-weight:750;margin-top:8px}
+@media(max-width:520px){.grid,.results{grid-template-columns:1fr}.full{grid-column:auto}.card{padding:15px}}
+</style>
+</head>
+<body>
+<main>
+<header class="head"><span class="tag">FOR CHECKLIST REPORTS</span><h1>SM/SL CALCULATOR</h1></header>
+
+<section class="card" id="chooser">
+  <h2>What do you want to calculate?</h2>
+  <div class="choices">
+    <button class="choice" id="targetBtn">TARGET<small>Projected performance</small></button>
+    <button class="choice" id="actualBtn">ACTUAL<small>Recorded performance</small></button>
+  </div>
+</section>
+
+<section class="card" id="calc" hidden>
+  <h2 id="modeTitle"></h2>
+  <div class="grid">
+    <div class="field full">
+      <label for="workDate">Report date</label>
+      <input id="workDate" type="date">
+      <div class="hint">Target figures are saved by date on this device. Use the same date in ACTUAL to compare.</div>
+    </div>
+
+    <div class="field" id="acField">
+      <label for="ac">Average Count — Projected AC</label>
+      <input id="ac" type="number" min="0" step="any" inputmode="decimal" placeholder="Projected AC">
+    </div>
+
+    <div class="field full" id="salesField" hidden>
+      <label for="salesLines">Actual Sales (₱) — enter one amount per line</label>
+      <textarea id="salesLines" inputmode="decimal" placeholder="Example:&#10;25000&#10;18500.50&#10;12000"></textarea>
+      <div class="hint">Enter multiple sales amounts on separate lines. They will be added automatically. Commas between amounts are also accepted.</div>
+    </div>
+
+    <div class="field full">
+      <label for="gc">Guest Count — <span id="gcLabel">Projected GC</span></label>
+      <textarea id="gc" inputmode="decimal" placeholder="Example: 25, 30, 18, 22"></textarea>
+      <div class="hint">Up to 16 numbers. Separate entries with commas or new lines.</div>
+    </div>
+
+    <div class="field">
+      <label for="rate">Average Crew Rate (₱)</label>
+      <input id="rate" type="number" min="0" step="any" inputmode="decimal" placeholder="Crew rate">
+    </div>
+    <div class="field">
+      <label for="hours">Crew Total Hours</label>
+      <input id="hours" type="number" min="0" step="any" inputmode="decimal" placeholder="Total crew hours">
+    </div>
+
+    <div class="field full" id="actualWasteField" hidden>
+      <h3>Actual Waste (₱)</h3>
+    </div>
+    <div class="field" id="rawActualField" hidden>
+      <label for="rawActual">Actual Raw Waste (₱)</label>
+      <input id="rawActual" type="number" min="0" step="any" inputmode="decimal" placeholder="Actual raw waste">
+    </div>
+    <div class="field" id="completeActualField" hidden>
+      <label for="completeActual">Actual Complete Waste (₱)</label>
+      <input id="completeActual" type="number" min="0" step="any" inputmode="decimal" placeholder="Actual complete waste">
+    </div>
+  </div>
+
+  <div id="serviceEntrySection" hidden>
+    <h3>Actual Service Timings</h3>
+    <div class="grid">
+      <div class="field"><label for="r2pActual">R2P actual (seconds)</label><input id="r2pActual" type="number" min="0" step="any" inputmode="decimal" placeholder="Enter actual R2P"></div>
+      <div class="field"><label for="oepeActual">OEPE actual (seconds)</label><input id="oepeActual" type="number" min="0" step="any" inputmode="decimal" placeholder="Enter actual OEPE"></div>
+      <div class="field"><label for="patActual">PAT actual (seconds)</label><input id="patActual" type="number" min="0" step="any" inputmode="decimal" placeholder="Enter actual PAT"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="action" id="back">Change type</button>
+    <button class="action" id="clear">Clear inputs</button>
+  </div>
+  <div class="error" id="error"></div>
+  <div class="status" id="saveStatus"></div>
+</section>
+
+<section class="card" id="panel" hidden aria-live="polite">
+  <h2>Current Results <span class="live">● LIVE</span></h2>
+  <div class="results">
+    <div class="result" id="rSales"><div class="name" id="salesName">SALES</div><div class="value" id="vSales">—</div></div>
+    <div class="result" id="rAc"><div class="name">AC</div><div class="value" id="vAc">—</div></div>
+    <div class="result" id="rGc"><div class="name">GC — TOTAL</div><div class="value" id="vGc">—</div></div>
+    <div class="result" id="rLabor"><div class="name">CREW LABOR (₱)</div><div class="value" id="vLabor">—</div></div>
+    <div class="result" id="rPct"><div class="name">CREW LABOR (%)</div><div class="value" id="vPct">—</div></div>
+    <div class="result" id="rHours"><div class="name">CREW LABOR HRS</div><div class="value" id="vHours">—</div></div>
+    <div class="result" id="rGcpch"><div class="name">GCPCH (GC ÷ CREW HRS)</div><div class="value" id="vGcpch">—</div></div>
+    <div class="result" id="rRaw"><div class="name" id="rawName">RAW WASTE (₱)</div><div class="value" id="vRaw">—</div></div>
+    <div class="result" id="rComplete"><div class="name" id="completeName">COMPLETE WASTE (₱)</div><div class="value" id="vComplete">—</div></div>
+  </div>
+  <div class="actions"><button class="action primary" id="varianceBtn">SHOW VARIANCE</button></div>
+  <p class="section-note" id="targetNotice"></p>
+</section>
+
+<section class="card" id="variancePanel" hidden>
+  <h2>Sales / Profit — Target vs Actual</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>SALES / PROFIT</th><th>TARGET</th><th>ACTUAL</th><th>+/−</th></tr></thead>
+      <tbody id="varianceRows"></tbody>
+    </table>
+  </div>
+  <p class="section-note">Variance = ACTUAL − TARGET. A plus (+) means actual is higher; a minus (−) means actual is lower.</p>
+
+  <h3>Service Timings</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>SERVICE</th><th>TARGET (SEC)</th><th>ACTUAL (SEC)</th><th>+/− (SEC)</th></tr></thead>
+      <tbody id="serviceRows"></tbody>
+    </table>
+  </div>
+  <p class="section-note">For service timings, a plus (+) means the actual time took longer than target.</p>
+</section>
+
+</main>
+<script>
+(()=>{
+  const $=id=>document.getElementById(id);
+  const money2=new Intl.NumberFormat("en-PH",{style:"currency",currency:"PHP",minimumFractionDigits:2,maximumFractionDigits:2});
+  const money6=new Intl.NumberFormat("en-PH",{style:"currency",currency:"PHP",minimumFractionDigits:2,maximumFractionDigits:6});
+  const number6=new Intl.NumberFormat("en-PH",{maximumFractionDigits:6});
+  const STORE_KEY="sm_sl_target_records_v2";
+  let mode=null, targetRecord=null, current=null;
+
+  const today=()=>{
+    const d=new Date();
+    return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
+  };
+  $("workDate").value=today();
+
+  function readStore(){
+    try{return JSON.parse(localStorage.getItem(STORE_KEY)||"{}")}catch(e){return {}}
+  }
+  function writeTarget(date,record){
+    try{
+      const all=readStore();
+      all[date]=record;
+      localStorage.setItem(STORE_KEY,JSON.stringify(all));
+      $("saveStatus").textContent="Target figures saved on this device for "+date+".";
+    }catch(e){
+      $("saveStatus").textContent="Could not save target figures. Check your browser storage settings.";
+    }
+  }
+  function loadTarget(date){
+    const all=readStore();
+    return all[date]||null;
+  }
+  function parseList(text,max=16){
+    const raw=text.trim();
+    if(!raw)return {value:null,error:null};
+    const parts=raw.split(/[,\n]+/).map(x=>x.trim());
+    if(parts.length>max||parts.some(x=>x===""||!Number.isFinite(Number(x))||Number(x)<0)){
+      return {value:null,error:"Enter up to "+max+" valid, non-negative numbers separated by commas or new lines."};
+    }
+    return {value:parts.reduce((sum,x)=>sum+Number(x),0),error:null};
+  }
+  function readNumber(id){
+    const s=$(id).value.trim();
+    if(s==="")return null;
+    const n=Number(s);
+    return Number.isFinite(n)&&n>=0?n:null;
+  }
+  function fmtMoney(n,precise=false){return n===null||n===undefined?"—":(precise?money6:money2).format(n)}
+  function fmtNum(n){return n===null||n===undefined?"—":number6.format(n)}
+  function setVal(id,n,text){$(id).textContent=text!==undefined?text:(n===null||n===undefined?"—":fmtNum(n))}
+  function showError(message){$("error").textContent=message||"";$("error").style.display=message?"block":"none"}
+  function getSales(){
+    if(mode==="target"){
+      const ac=readNumber("ac"), gc=parseList($("gc").value);
+      if(gc.error)return {value:null,error:gc.error};
+      return {value:ac!==null&&gc.value!==null?ac*gc.value:null,error:null};
+    }
+    const sales=parseList($("salesLines").value,100);
+    return sales;
+  }
+  function update(){
+    showError("");
+    const gcResult=parseList($("gc").value);
+    if(gcResult.error)showError(gcResult.error);
+    const gc=gcResult.value;
+    const salesResult=getSales();
+    if(salesResult.error)showError(salesResult.error);
+    const sales=salesResult.value;
+    const rate=readNumber("rate"), hours=readNumber("hours");
+    const labor=rate!==null&&hours!==null?rate*hours:null;
+    const laborPct=labor!==null&&sales!==null&&sales>0?labor/sales*100:null;
+    const ac=mode==="target"?readNumber("ac"):(sales!==null&&gc!==null&&gc>0?sales/gc:null);
+    const gcpch=gc!==null&&hours!==null&&hours>0?gc/hours:null;
+    const rawTarget=mode==="target"&&sales!==null?sales*.002:null;
+    const completeTarget=mode==="target"&&sales!==null?sales*.0005:null;
+    const raw=mode==="target"?rawTarget:readNumber("rawActual");
+    const complete=mode==="target"?completeTarget:readNumber("completeActual");
+
+    current={sales,gc,ac,labor,laborPct,hours,gcpch,raw,complete,
+      r2p:readNumber("r2pActual"),oepe:readNumber("oepeActual"),pat:readNumber("patActual")};
+
+    $("salesName").textContent=mode==="target"?"PROJECTED SALES":"ACTUAL SALES";
+    $("rawName").textContent=mode==="target"?"RAW WASTE — TARGET (₱)":"RAW WASTE — ACTUAL (₱)";
+    $("completeName").textContent=mode==="target"?"COMPLETE WASTE — TARGET (₱)":"COMPLETE WASTE — ACTUAL (₱)";
+    setVal("vSales",sales,fmtMoney(sales));
+    setVal("vAc",ac);
+    setVal("vGc",gc);
+    setVal("vLabor",labor,fmtMoney(labor));
+    setVal("vPct",laborPct,laborPct===null?"—":fmtNum(laborPct)+"%");
+    setVal("vHours",hours,hours===null?"—":fmtNum(hours));
+    if(gcpch===null)setVal("vGcpch",null);
+    else{
+      const trunc=(Math.floor(gcpch*10000)/10000).toFixed(4);
+      setVal("vGcpch",gcpch,trunc+" | "+gcpch.toFixed(2));
+    }
+    setVal("vRaw",raw,fmtMoney(raw,true));
+    setVal("vComplete",complete,fmtMoney(complete,true));
+
+    $("rAc").hidden=ac===null;
+    $("rGc").hidden=gc===null;
+    $("rLabor").hidden=labor===null;
+    $("rPct").hidden=laborPct===null;
+    $("rHours").hidden=hours===null;
+    $("rGcpch").hidden=gcpch===null;
+    $("rRaw").hidden=raw===null;
+    $("rComplete").hidden=complete===null;
+    $("rSales").hidden=sales===null;
+    $("panel").hidden=![sales,gc,ac,labor,laborPct,hours,gcpch,raw,complete].some(x=>x!==null);
+
+    const date=$("workDate").value;
+    if(mode==="target"&&sales!==null){
+      const record={...current,date,savedAt:new Date().toISOString()};
+      writeTarget(date,record);
+    }else if(mode==="actual"){
+      targetRecord=loadTarget(date);
+      $("targetNotice").textContent=targetRecord?
+        "Saved target found for "+date+". Select SHOW VARIANCE to compare.":
+        "No saved target found for "+date+". Enter TARGET for this date first to enable comparison.";
+    }
+    if(!$("variancePanel").hidden)renderVariance();
+  }
+
+  function cell(value){return value===null||value===undefined?"—":value}
+  function variance(actual,target,formatter=fmtNum){
+    if(actual===null||actual===undefined||target===null||target===undefined)return "—";
+    const diff=actual-target;
+    const sign=diff>0?"+":diff<0?"−":"";
+    return '<span class="'+(diff>0?"positive":diff<0?"negative":"neutral")+'">'+sign+formatter(Math.abs(diff))+'</span>';
+  }
+  function row(label,target,actual,formatter=fmtNum,precise=false){
+    const f=n=>n===null||n===undefined?"—":formatter(n,precise);
+    return "<tr><td>"+label+"</td><td>"+f(target)+"</td><td>"+f(actual)+"</td><td>"+variance(actual,target,n=>formatter(n,precise))+"</td></tr>";
+  }
+  function renderVariance(){
+    const date=$("workDate").value;
+    targetRecord=loadTarget(date);
+    if(!targetRecord){
+      $("varianceRows").innerHTML='<tr><td colspan="4">No saved TARGET record for this date. Calculate TARGET first.</td></tr>';
+    }else if(!current){
+      $("varianceRows").innerHTML='<tr><td colspan="4">Enter ACTUAL figures to compare.</td></tr>';
+    }else{
+      const t=targetRecord,a=current;
+      $("varianceRows").innerHTML=
+        row("Sales",t.sales,a.sales,(n)=>money2.format(n))+
+        row("GC",t.gc,a.gc)+
+        row("AC",t.ac,a.ac)+
+        row("Crew Labor (₱)",t.labor,a.labor,(n)=>money2.format(n))+
+        row("Crew Labor (%)",t.laborPct,a.laborPct,(n)=>fmtNum(n)+"%")+
+        row("Crew Labor Hrs",t.hours,a.hours)+
+        row("GCPCH",t.gcpch,a.gcpch)+
+        row("RW (₱)",t.raw,a.raw,(n)=>money6.format(n))+
+        row("CW (₱)",t.complete,a.complete,(n)=>money6.format(n));
+    }
+    const service=[
+      ["R2P",90,current?current.r2p:null],
+      ["OEPE",120,current?current.oepe:null],
+      ["PAT",50,current?current.pat:null]
+    ];
+    $("serviceRows").innerHTML=service.map(([name,target,actual])=>
+      "<tr><td>"+name+"</td><td>"+target+"</td><td>"+cell(actual===null?null:fmtNum(actual))+"</td><td>"+variance(actual,target,n=>fmtNum(n))+"</td></tr>"
+    ).join("");
+  }
+
+  function choose(m){
+    mode=m;
+    $("chooser").hidden=true;
+    $("calc").hidden=false;
+    $("panel").hidden=true;
+    $("variancePanel").hidden=true;
+    $("modeTitle").textContent=m.toUpperCase();
+    $("acField").hidden=m!=="target";
+    $("salesField").hidden=m!=="actual";
+    $("actualWasteField").hidden=m!=="actual";
+    $("rawActualField").hidden=m!=="actual";
+    $("completeActualField").hidden=m!=="actual";
+    $("serviceEntrySection").hidden=m!=="actual";
+    $("gcLabel").textContent=m==="target"?"Projected GC":"Actual GC";
+    $("saveStatus").textContent="";
+    if(m==="actual"){
+      targetRecord=loadTarget($("workDate").value);
+    }
+    update();
+  }
+  function clearInputs(){
+    ["ac","salesLines","gc","rate","hours","rawActual","completeActual","r2pActual","oepeActual","patActual"].forEach(id=>$(id).value="");
+    update();
+  }
+
+  $("targetBtn").onclick=()=>choose("target");
+  $("actualBtn").onclick=()=>choose("actual");
+  $("back").onclick=()=>{
+    $("chooser").hidden=false;$("calc").hidden=true;$("panel").hidden=true;$("variancePanel").hidden=true;mode=null;
+  };
+  $("clear").onclick=clearInputs;
+  $("varianceBtn").onclick=()=>{
+    const hidden=$("variancePanel").hidden;
+    $("variancePanel").hidden=!hidden;
+    $("varianceBtn").textContent=hidden?"HIDE VARIANCE":"SHOW VARIANCE";
+    if(hidden)renderVariance();
+  };
+  ["ac","salesLines","gc","rate","hours","rawActual","completeActual","r2pActual","oepeActual","patActual","workDate"].forEach(id=>{
+    $(id).addEventListener("input",update);
+    $(id).addEventListener("change",update);
+  });
+})();
+</script>
+<script>
+if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+</script>
+</body>
+</html>
