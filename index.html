@@ -144,7 +144,7 @@ td{font-variant-numeric:tabular-nums}
     <div class="result" id="rRaw"><div class="name" id="rawName">RAW WASTE (₱)</div><div class="value" id="vRaw">—</div></div>
     <div class="result" id="rComplete"><div class="name" id="completeName">COMPLETE WASTE (₱)</div><div class="value" id="vComplete">—</div></div>
   </div>
-  <div class="actions"><button class="action primary" id="varianceBtn">SHOW VARIANCE</button></div>
+  <<div class="actions" id="varianceActions"><button class="action primary" id="varianceBtn">SHOW VARIANCE</button></div>
   <p class="section-note" id="targetNotice"></p>
 </section>
 
@@ -339,6 +339,7 @@ td{font-variant-numeric:tabular-nums}
     $("panel").hidden=true;
     $("variancePanel").hidden=true;
     $("modeTitle").textContent=m.toUpperCase();
+    $("varianceActions").hidden = m === "target";
     $("acField").hidden=m!=="target";
     $("salesField").hidden=m!=="actual";
     $("actualWasteField").hidden=m!=="actual";
