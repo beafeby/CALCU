@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "sm-sl-calculator-v3";
+const CACHE_NAME = "sm-sl-calculator-v4";
 
 const FILES_TO_CACHE = [
   "./",
