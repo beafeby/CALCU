@@ -76,7 +76,7 @@ td{font-variant-numeric:tabular-nums}
     </div>
 
     <div class="field" id="acField">
-      <label for="ac">Average Count — Projected AC</label>
+      <label for="ac">AC — Projected AC</label>
       <input id="ac" type="number" min="0" step="any" inputmode="decimal" placeholder="Projected AC">
     </div>
 
@@ -137,14 +137,14 @@ td{font-variant-numeric:tabular-nums}
     <div class="result" id="rSales"><div class="name" id="salesName">SALES</div><div class="value" id="vSales">—</div></div>
     <div class="result" id="rAc"><div class="name">AC</div><div class="value" id="vAc">—</div></div>
     <div class="result" id="rGc"><div class="name">GC — TOTAL</div><div class="value" id="vGc">—</div></div>
-    <div class="result" id="rLabor"><div class="name">CREW LABOR (₱)</div><div class="value" id="vLabor">—</div></div>
-    <div class="result" id="rPct"><div class="name">CREW LABOR (%)</div><div class="value" id="vPct">—</div></div>
+    <div class="result" id="rLabor"><div class="name">CREW LABOR (₱) [Crew Hr. x Crew Rate]</div><div class="value" id="vLabor">—</div></div>
+    <div class="result" id="rPct"><div class="name">CREW LABOR (%) [Crew Hr. x Crew Rate ÷ Sales x 100]</div><div class="value" id="vPct">—</div></div>
     <div class="result" id="rHours"><div class="name">CREW LABOR HRS</div><div class="value" id="vHours">—</div></div>
     <div class="result" id="rGcpch"><div class="name">GCPCH (GC ÷ CREW HRS)</div><div class="value" id="vGcpch">—</div></div>
-    <div class="result" id="rRaw"><div class="name" id="rawName">RAW WASTE (₱)</div><div class="value" id="vRaw">—</div></div>
-    <div class="result" id="rComplete"><div class="name" id="completeName">COMPLETE WASTE (₱)</div><div class="value" id="vComplete">—</div></div>
+    <div class="result" id="rRaw"><div class="name" id="rawName">RAW WASTE (₱) [sales x 0.20%]</div><div class="value" id="vRaw">—</div></div>
+    <div class="result" id="rComplete"><div class="name" id="completeName">COMPLETE WASTE (₱) [sales x 0.05%]</div><div class="value" id="vComplete">—</div></div>
   </div>
-  <<div class="actions" id="varianceActions"><button class="action primary" id="varianceBtn">SHOW VARIANCE</button></div>
+  <div class="actions" id="varianceActions"><button class="action primary" id="varianceBtn">SHOW VARIANCE</button></div>
   <p class="section-note" id="targetNotice"></p>
 </section>
 
