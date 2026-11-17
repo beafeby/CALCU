@@ -3,7 +3,7 @@
   "name": "SM/SL Calculator",
   "short_name": "SM/SL Calc",
   "description": "Store Management and Service Level Calculator",
-  "start_url": "./SM_SL_Calculator.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
