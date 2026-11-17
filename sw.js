@@ -3,7 +3,7 @@ const CACHE_NAME = "sm-sl-calculator-v3";
 
 const FILES_TO_CACHE = [
   "./",
-  "./SM_SL_Calculator.html",
+  "./index.html",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png"
@@ -42,11 +42,11 @@ self.addEventListener("fetch", event => {
         .then(response => {
           const copy = response.clone();
           caches.open(CACHE_NAME).then(cache =>
-            cache.put("./SM_SL_Calculator.html", copy)
+            cache.put("./index.html", copy)
           );
           return response;
         })
-        .catch(() => caches.match("./SM_SL_Calculator.html"))
+        .catch(() => caches.match("./index.html"))
     );
     return;
   }
