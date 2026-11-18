@@ -141,8 +141,8 @@ td{font-variant-numeric:tabular-nums}
     <div class="result" id="rPct"><div class="name">CREW LABOR (%) [Crew Hr. x Crew Rate ÷ Sales x 100]</div><div class="value" id="vPct">—</div></div>
     <div class="result" id="rHours"><div class="name">CREW LABOR HRS</div><div class="value" id="vHours">—</div></div>
     <div class="result" id="rGcpch"><div class="name">GCPCH (GC ÷ CREW HRS)</div><div class="value" id="vGcpch">—</div></div>
-    <div class="result" id="rRaw"><div class="name" id="rawName">RAW WASTE (₱) sales x 0.20% </div><div class="value" id="vRaw">—</div></div>
-    <div class="result" id="rComplete"><div class="name" id="completeName">COMPLETE WASTE (₱) sales x 0.05% </div><div class="value" id="vComplete">—</div></div>
+    <div class="result" id="rRaw"><div class="name" id="rawName">RAW WASTE (₱) [sales x 0.20%] </div><div class="value" id="vRaw">—</div></div>
+    <div class="result" id="rComplete"><div class="name" id="completeName">COMPLETE WASTE (₱) [sales x 0.05%] </div><div class="value" id="vComplete">—</div></div>
   </div>
   <div class="actions" id="varianceActions"><button class="action primary" id="varianceBtn">SHOW VARIANCE</button></div>
   <p class="section-note" id="targetNotice"></p>
@@ -251,8 +251,8 @@ td{font-variant-numeric:tabular-nums}
       r2p:readNumber("r2pActual"),oepe:readNumber("oepeActual"),pat:readNumber("patActual")};
 
     $("salesName").textContent=mode==="target"?"PROJECTED SALES":"ACTUAL SALES";
-    $("rawName").textContent=mode==="target"?"RAW WASTE — TARGET (₱)":"RAW WASTE — ACTUAL (₱)";
-    $("completeName").textContent=mode==="target"?"COMPLETE WASTE — TARGET (₱)":"COMPLETE WASTE — ACTUAL (₱)";
+    $("rawName").textContent=mode==="target"?"RAW WASTE — TARGET (₱)[sales x 0.20%]":"RAW WASTE — ACTUAL (₱)";
+    $("completeName").textContent=mode==="target"?"COMPLETE WASTE — TARGET (₱) [sales x 0.05%] ":"COMPLETE WASTE — ACTUAL (₱)";
     setVal("vSales",sales,fmtMoney(sales));
     setVal("vAc",ac);
     setVal("vGc",gc);
